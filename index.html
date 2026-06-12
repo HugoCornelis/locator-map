@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <title>Deelnemerskaart Vlaanderen</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    #map {
+      height: 100vh;
+      width: 100vw;
+    }
+
+    #sidebar {
+      position: fixed;
+      top: 0;
+      right: -420px;
+      width: 380px;
+      max-width: 90vw;
+      height: 100vh;
+      background: #ffffff;
+      box-shadow: -4px 0 14px rgba(0, 0, 0, 0.25);
+      padding: 24px;
+      box-sizing: border-box;
+      transition: right 0.25s ease;
+      z-index: 1000;
+      overflow-y: auto;
+    }
+
+    #sidebar.open {
+      right: 0;
+    }
+
+    #closeSidebar {
+      float: right;
+      border: none;
+      background: #eeeeee;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: 4px;
+    }
+
+    #closeSidebar:hover {
+      background: #dddddd;
+    }
+
+    .sidebar-title {
+      margin-top: 48px;
+      margin-bottom: 12px;
+      font-size: 1.35rem;
+      font-weight: bold;
+    }
+
+    .sidebar-meta {
+      color: #555555;
+      margin-bottom: 20px;
+    }
+
+    .sidebar-section-title {
+      margin-top: 24px;
+      font-weight: bold;
+    }
+
+    .privacy-note {
+      margin-top: 28px;
+      padding: 12px;
+      background: #f4f4f4;
+      border-left: 4px solid #999999;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="map"></div>
+
+  <aside id="sidebar">
+    <button id="closeSidebar">Sluiten</button>
+
+    <div id="sidebarContent">
+      <div class="sidebar-title">Deelnemerskaart</div>
+      <p>Klik op een ballonnetje om meer informatie te zien.</p>
+
+      <div class="privacy-note">
+        Deze kaart toont voorbeeldlocaties op gemeentelijk niveau, niet op exact adresniveau.
+      </div>
+    </div>
+  </aside>
+
+  <!-- Leaflet JavaScript -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+  </script>
+
+  <script>
+    // Kaart initialiseren, gecentreerd op Vlaanderen
+    const map = L.map('map').setView([50.95, 4.45], 8);
+
+    // OpenStreetMap-kaartlaag toevoegen
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap-bijdragers'
+    }).addTo(map);
+
+    // Voorbeelddeelnemers.
+    // De coördinaten zijn gemeentelijke/centrale locaties, geen privé-adressen.
+    const deelnemers = [
+      {
+        plaats: "Edegem",
+        provincie: "Antwerpen",
+        lat: 51.1566,
+        lng: 4.4457,
+        titel: "Deelnemer regio Edegem",
+        info: "Deze deelnemer vraagt respect voor keuzevrijheid, transparantie en een menswaardige behandeling bij de invoering van digitale meters.",
+        standpunt: "Voorkeur voor een controleerbare en bekabelde oplossing."
+      },
+      {
+        plaats: "Hasselt",
+        provincie: "Limburg",
+        lat: 50.9307,
+        lng: 5.3325,
+        titel: "Deelnemer regio Hasselt",
+        info: "Deze deelnemer vindt dat technologische verplichtingen in de woning zorgvuldig, proportioneel en met respect voor burgers moeten worden ingevoerd.",
+        standpunt: "Nadruk op inspraak, autonomie en transparantie."
+      },
+      {
+        plaats: "Gent",
+        provincie: "Oost-Vlaanderen",
+        lat: 51.0543,
+        lng: 3.7174,
+        titel: "Deelnemer regio Gent",
+        info: "Deze deelnemer wil dat de discussie over digitale meters ruimer wordt gevoerd dan alleen technisch of administratief.",
+        standpunt: "Nadruk op ethische grenzen en burgerrechten."
+      },
+      {
+        plaats: "Leuven",
+        provincie: "Vlaams-Brabant",
+        lat: 50.8798,
+        lng: 4.7005,
+        titel: "Deelnemer regio Leuven",
+        info: "Deze deelnemer vraagt dat burgers niet onder druk worden gezet wanneer zij redelijke bezwaren hebben tegen de plaatsing van een digitale meter.",
+        standpunt: "Nadruk op zorgvuldigheid, proportionaliteit en keuzevrijheid."
+      }
+    ];
+
+    const sidebar = document.getElementById('sidebar');
+    const sidebarContent = document.getElementById('sidebarContent');
+    const closeSidebar = document.getElementById('closeSidebar');
+
+    // Ballonnetjes op de kaart plaatsen
+    deelnemers.forEach(deelnemer => {
+      const marker = L.marker([deelnemer.lat, deelnemer.lng]).addTo(map);
+
+      marker.bindTooltip(deelnemer.plaats);
+
+      marker.on('click', () => {
+        sidebarContent.innerHTML = `
+          <div class="sidebar-title">${deelnemer.titel}</div>
+
+          <div class="sidebar-meta">
+            <strong>Gemeente:</strong> ${deelnemer.plaats}<br>
+            <strong>Provincie:</strong> ${deelnemer.provincie}
+          </div>
+
+          <div class="sidebar-section-title">Informatie</div>
+          <p>${deelnemer.info}</p>
+
+          <div class="sidebar-section-title">Standpunt</div>
+          <p>${deelnemer.standpunt}</p>
+
+          <div class="privacy-note">
+            Deze marker geeft een regio of gemeente weer, geen exact woonadres.
+          </div>
+        `;
+
+        sidebar.classList.add('open');
+      });
+    });
+
+    // Zijbanner sluiten
+    closeSidebar.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+    });
+
+    // Zijbanner ook sluiten met Escape-toets
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') {
+        sidebar.classList.remove('open');
+      }
+    });
+  </script>
+</body>
+</html>
